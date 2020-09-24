@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(name='clickhouse-migrator',
       packages=find_packages(),
-      version='1.0.0',
+      version='1.0.1',
       description='Migration library for Clickhouse',
       author='Simon Roy, Arvind Chinniah',
       install_requires=['pandas', 'clickhouse_driver'],
