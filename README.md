@@ -1,6 +1,8 @@
 ## Clickhouse Migrator
 
-Development of large-scale db systems many times requires constant changes to the actual DB system.
+[Clickhouse](https://clickhouse.tech/) is known for its scale to store and fetch large datasets.
+
+Development and Maintenance of large-scale db systems many times requires constant changes to the actual DB system.
 Holding off the scripts to migrate these will be painful.
 
 We found there is nothing existing earlier and developed one inspired by, [Flyway](https://flywaydb.org/), [Alembic](https://alembic.sqlalchemy.org/en/latest/)
