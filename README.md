@@ -10,6 +10,12 @@ We found there is nothing existing earlier and developed one inspired by, [Flywa
 This is a python library, which you can execute as a pre-hook using sys python.
 Or as a migration framework before deployment/server-startup in your application as required.
 
+
+### Installation
+
+You can install from pypi using `pip install clickhouse-migrator`.
+These latest available working version is `1.0.0`
+
 ### Usage
 
 `migrate(db_name, migrations_home, db_host, db_user, db_password, create_db_if_no_exists)`
