@@ -1,10 +1,10 @@
-import os
-import sys
-
-from clickhouse_driver import Client
 import hashlib
+import os
 import pathlib
+
 import pandas as pd
+from clickhouse_driver import Client
+
 
 def execute_and_inflate(client, query):
   result = client.execute(query, with_column_types=True)
