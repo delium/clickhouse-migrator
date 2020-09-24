@@ -14,7 +14,6 @@ Or as a migration framework before deployment/server-startup in your application
 ### Installation
 
 You can install from pypi using `pip install clickhouse-migrator`.
-These latest available working version is `1.0.0`
 
 ### Usage
 
