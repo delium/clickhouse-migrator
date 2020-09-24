@@ -6,4 +6,6 @@ setup(name='clickhouse-migrator',
       description='Migration library for Clickhouse',
       author='Simon Roy, Arvind Chinniah',
       install_requires=['pandas', 'clickhouse_driver'],
+      tests_require=['pytest==5.1.1'],
+      test_suite='tests',
       license='MIT')
