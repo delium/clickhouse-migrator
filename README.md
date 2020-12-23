@@ -11,6 +11,11 @@ This is a python library, which you can execute as a pre-hook using sys python.
 Or as a migration framework before deployment/server-startup in your application as required.
 
 
+### Publishing to pypi
+* python setup.py sdist
+* twine upload dist/*
+
+
 ### Installation
 
 You can install from pypi using `pip install clickhouse-migrator`.
@@ -37,3 +42,4 @@ The filenames are pretty similar to how `flyway` keeps it.
 
 Your first version filename should be prefixed with `V1__` (double underscore)
 These migrations are executed one by one, failures in between will stop and not further version files will be executed.
+
