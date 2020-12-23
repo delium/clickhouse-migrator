@@ -17,7 +17,11 @@ You can install from pypi using `pip install clickhouse-migrator`.
 
 ### Usage
 
-`migrate(db_name, migrations_home, db_host, db_user, db_password, create_db_if_no_exists)`
+```python
+from migration_lib.migrate import migrate
+
+migrate(db_name, migrations_home, db_host, db_user, db_password, create_db_if_no_exists)
+```
 
 Parameter | Description | Default
 -------|-------------|---------
