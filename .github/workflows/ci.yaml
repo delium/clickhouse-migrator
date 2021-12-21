@@ -1,0 +1,44 @@
+name: ci
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: test ${{ matrix.py }} - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - Ubuntu
+#          - Windows
+#          - MacOs
+        py:
+          - "3.10.0"
+          - "3.9"
+          - "3.8"
+          - "3.7"
+          - "3.6"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.py }}
+
+      - name: Setup
+        run: make setup
+
+      - name: Docker compose up
+        run: make docker-compose-up
+
+      - name: Test
+        run: make test
