@@ -1,30 +1,10 @@
-import hashlib
-import os
-import pathlib
-
 import pandas as pd
-from clickhouse_driver import Client
 
 
 def execute_and_inflate(client, query):
     result = client.execute(query, with_column_types=True)
     column_names = [c[0] for c in result[len(result) - 1]]
     return pd.DataFrame([dict(zip(column_names, d)) for d in result[0]])
-
-
-def get_connection(db_name, db_host, db_user, db_password):
-    return Client(db_host, user=db_user, password=db_password, database=db_name)
-
-
-def init_db(client):
-    client.execute(
-        "CREATE TABLE IF NOT EXISTS schema_versions ("
-        "version UInt32, "
-        "md5 String, "
-        "script String, "
-        "created_at DateTime DEFAULT now()"
-        ") ENGINE = MergeTree ORDER BY tuple(created_at)"
-    )
 
 
 def migrations_to_apply(client, incoming):
@@ -91,36 +71,3 @@ def apply_migration(client, migrations):
                     }
                 ],
             )
-
-
-def create_db(db_name, db_host, db_user, db_password):
-    client = Client(db_host, user=db_user, password=db_password)
-    client.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
-    client.disconnect()
-
-
-def migrate(
-    db_name,
-    migrations_home,
-    db_host,
-    db_user: str,
-    db_password: str,
-    create_db_if_no_exists: bool = True,
-):
-    if create_db_if_no_exists:
-        create_db(db_name, db_host, db_user, db_password)
-    client = get_connection(db_name, db_host, db_user, db_password)
-    init_db(client)
-    migrations = [
-        {
-            "version": int(f.name.split("_")[0].replace("V", "")),
-            "script": f"{migrations_home}/{f.name}",
-            "md5": hashlib.md5(
-                pathlib.Path(f"{migrations_home}/{f.name}").read_bytes()
-            ).hexdigest(),
-        }
-        for f in os.scandir(f"{migrations_home}")
-        if f.name.endswith(".sql")
-    ]
-    apply_migration(client, migrations_to_apply(client, pd.DataFrame(migrations)))
-    client.disconnect()
