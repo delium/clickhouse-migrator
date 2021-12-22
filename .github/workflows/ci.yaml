@@ -39,5 +39,8 @@ jobs:
       - name: Docker compose up
         run: make docker-compose-up
 
+      - name: Setup
+        run: make setup
+
       - name: Test
         run: make test
