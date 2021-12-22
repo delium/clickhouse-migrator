@@ -6,6 +6,8 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - src/**
 
 jobs:
   test:
@@ -33,9 +35,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py }}
-
-      - name: Setup
-        run: make setup
 
       - name: Docker compose up
         run: make docker-compose-up
