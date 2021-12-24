@@ -12,8 +12,8 @@ def execute_and_inflate(client, query):
   return pd.DataFrame([dict(zip(column_names, d)) for d in result[0]])
 
 
-def get_connection(db_name, db_host, db_user, db_password):
-  return Client(db_host, user=db_user, password=db_password, database=db_name)
+def get_connection(db_name, db_host, db_user, db_password, db_port=None):
+  return Client(db_host, port=db_port, user=db_user, password=db_password, database=db_name)
 
 
 def init_db(client, db_name):
@@ -50,15 +50,15 @@ def apply_migration(client, migrations):
       client.execute(f"INSERT INTO schema_versions(version, script, md5) VALUES", [{'version': row['version'], 'script': row['script'], 'md5':row['md5']}])
 
 
-def create_db(db_name, db_host, db_user, db_password):
-  client = Client(db_host, user=db_user, password=db_password)
+def create_db(db_name, db_host, db_user, db_password, db_port=None):
+  client = Client(db_host, port=db_port, user=db_user, password=db_password)
   client.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
   client.disconnect()
 
-def migrate(db_name, migrations_home, db_host, db_user, db_password, create_db_if_no_exists=True):
+def migrate(db_name, migrations_home, db_host, db_port, db_user, db_password, create_db_if_no_exists=True):
   if create_db_if_no_exists:
-    create_db(db_name, db_host, db_user, db_password)
-  client = get_connection(db_name, db_host, db_user, db_password)
+    create_db(db_name, db_host, db_port, db_user, db_password)
+  client = get_connection(db_name, db_host, db_port, db_user, db_password)
   init_db(client, db_name)
   migrations = [{"version": int(f.name.split('_')[0].replace('V', '')),
                  "script": f"{migrations_home}/{f.name}", "md5": hashlib.md5(pathlib.Path(f"{migrations_home}/{f.name}").read_bytes()).hexdigest()}
