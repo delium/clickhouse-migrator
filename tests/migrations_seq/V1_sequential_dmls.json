@@ -1,0 +1,7 @@
+[
+  "ALTER TABLE pytest.sample ADD COLUMN enabled UInt32 DEFAULT 1",
+  "ALTER TABLE pytest.sample ADD COLUMN guard UInt32 DEFAULT -1",
+  "ALTER TABLE pytest.sample UPDATE enabled=0 WHERE name > 3000",
+  "ALTER TABLE pytest.sample UPDATE guard=0 WHERE enabled = 0",
+  "ALTER TABLE pytest.sample UPDATE guard=1 WHERE enabled = 1"
+]

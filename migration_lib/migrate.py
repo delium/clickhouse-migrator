@@ -1,7 +1,9 @@
+import time
 import hashlib
 import os
 import pathlib
 import json
+import datetime
 
 import pandas as pd
 from clickhouse_driver import Client
@@ -39,7 +41,7 @@ def migrations_to_apply(client, incoming):
   return execution_stat[execution_stat.c_md5.isnull()][['version', 'script', 'md5']]
 
 
-def apply_migration(client, migrations):
+def apply_migration(client, migrations, db_name, queue_exec=True):
   if (migrations.empty):
     return
   migrations = migrations.sort_values('version')
@@ -47,9 +49,26 @@ def apply_migration(client, migrations):
     with open(row['script']) as f:
       migration_scripts = json.load(f) if row['script'].endswith('.json') else [f.read()]
       for migration_script in migration_scripts:
-        client.execute(migration_script)
+        pipelined(client, migration_script, db_name) if queue_exec else client.execute(migration_script)
       print(f"INSERT INTO schema_versions(version, script, md5) VALUES({row['version']}, '{row['script']}', '{row['md5']}')")
       client.execute(f"INSERT INTO schema_versions(version, script, md5) VALUES", [{'version': row['version'], 'script': row['script'], 'md5':row['md5']}])
+
+def pipelined(client, migration_script, db_name, timeout=60*60):
+  ct = datetime.datetime.now()
+  current_time=ct.strftime("%Y-%m-%d %H:%M:%S")
+  client.execute(migration_script)
+  while True:
+    loop_time = datetime.datetime.now()
+    if((loop_time - ct).total_seconds() >= timeout):
+      raise Exception(f'Transaction Timeout - Unable to complete in {timeout} seconds, migration -> {migration_script}', )
+    mutations_to_inspect = execute_and_inflate(client, f"SELECT database, table, mutation_id, lower(command) as command FROM system.mutations WHERE database='{db_name}' and create_time >= '{current_time}' and is_done=0")
+    if mutations_to_inspect.empty:
+      break
+    mutations_to_inspect['match'] = mutations_to_inspect.apply(lambda row: row['command'] in migration_script, axis=1)
+    mutations_to_inspect = mutations_to_inspect[mutations_to_inspect['match'] == True]
+    if mutations_to_inspect.empty:
+      break
+    time.sleep(5)
 
 
 def create_db(db_name, db_host, db_user, db_password, db_port=None):
@@ -57,7 +76,7 @@ def create_db(db_name, db_host, db_user, db_password, db_port=None):
   client.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
   client.disconnect()
 
-def migrate(db_name, migrations_home, db_host, db_user, db_password, db_port=None, create_db_if_no_exists=True):
+def migrate(db_name, migrations_home, db_host, db_user, db_password, db_port=None, create_db_if_no_exists=True, queue_exec=True):
   if create_db_if_no_exists:
     create_db(db_name, db_host, db_user, db_password, db_port=db_port)
   client = get_connection(db_name, db_host, db_user, db_password, db_port=db_port)
@@ -65,5 +84,5 @@ def migrate(db_name, migrations_home, db_host, db_user, db_password, db_port=Non
   migrations = [{"version": int(f.name.split('_')[0].replace('V', '')),
                  "script": f"{migrations_home}/{f.name}", "md5": hashlib.md5(pathlib.Path(f"{migrations_home}/{f.name}").read_bytes()).hexdigest()}
                 for f in os.scandir(f"{migrations_home}") if f.name.endswith('.sql') or f.name.endswith('.json')]
-  apply_migration(client, migrations_to_apply(client, pd.DataFrame(migrations)))
+  apply_migration(client, migrations_to_apply(client, pd.DataFrame(migrations)), db_name, queue_exec=queue_exec)
   client.disconnect()
