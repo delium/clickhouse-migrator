@@ -12,8 +12,8 @@ Or as a migration framework before deployment/server-startup in your application
 
 
 ### Publishing to pypi
-* python setup.py sdist
-* twine upload dist/*
+* python -m build
+* python -m twine upload --verbose --repository pypi dist/*
 
 
 ### Installation
