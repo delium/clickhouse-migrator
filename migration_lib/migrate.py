@@ -55,10 +55,10 @@ def create_db(db_name, db_host, db_user, db_password, db_port=None):
   client.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
   client.disconnect()
 
-def migrate(db_name, migrations_home, db_host, db_port, db_user, db_password, create_db_if_no_exists=True):
+def migrate(db_name, migrations_home, db_host, db_user, db_password, db_port=None, create_db_if_no_exists=True):
   if create_db_if_no_exists:
-    create_db(db_name, db_host, db_port, db_user, db_password)
-  client = get_connection(db_name, db_host, db_port, db_user, db_password)
+    create_db(db_name, db_host, db_user, db_password, db_port=db_port)
+  client = get_connection(db_name, db_host, db_user, db_password, db_port=db_port)
   init_db(client, db_name)
   migrations = [{"version": int(f.name.split('_')[0].replace('V', '')),
                  "script": f"{migrations_home}/{f.name}", "md5": hashlib.md5(pathlib.Path(f"{migrations_home}/{f.name}").read_bytes()).hexdigest()}
