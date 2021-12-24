@@ -35,6 +35,8 @@ migrations_home | Path to list of migration files | <project_root>
 db_host | Clickhouse database hostname | localhost
 db_password | ***** | ****
 create_db_if_no_exists | If the `db_name` is not present, enabling this will create the db | True
+db_port | Database port incase your server runs on a non default port | None (defaults to 9000)
+queue_exec | Command Pipelining (wait for system mutations if any to complete) for every command | True
 
 ### Folder and Migration file patterns
 
