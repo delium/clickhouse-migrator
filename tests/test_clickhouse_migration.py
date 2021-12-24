@@ -70,3 +70,20 @@ def test_should_migrate_empty_database(client):
   assert tables.name.values[0] == 'sample'
   assert tables.name.values[1] == 'schema_versions'
   client.disconnect()
+
+def test_should_migrate_using_sql_and_json_migrations(client):
+  client = get_connection('pytest', 'localhost', 'default', '')
+  clean_slate(client)
+  tables = execute_and_inflate(client, 'show tables')
+  assert len(tables) == 1
+  assert tables.name.values[0] == 'schema_versions'
+  migrate('pytest', 'tests/clickhouse_migrations_2', 'localhost', 'default', '')
+  tables = execute_and_inflate(client, 'show tables')
+  assert len(tables) == 5
+  assert tables.name.values[0] == 'sample'
+  assert tables.name.values[1] == 'sample1'
+  assert tables.name.values[2] == 'sample2'
+  assert tables.name.values[3] == 'sample3'
+  assert tables.name.values[4] == 'schema_versions'
+  client.disconnect()
+

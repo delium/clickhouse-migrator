@@ -1,6 +1,7 @@
 import hashlib
 import os
 import pathlib
+import json
 
 import pandas as pd
 from clickhouse_driver import Client
@@ -42,10 +43,11 @@ def apply_migration(client, migrations):
   if (migrations.empty):
     return
   migrations = migrations.sort_values('version')
-  for index, row in migrations.iterrows():
+  for _, row in migrations.iterrows():
     with open(row['script']) as f:
-      migration_script = f.read()
-      client.execute(migration_script)
+      migration_scripts = json.load(f) if row['script'].endswith('.json') else [f.read()]
+      for migration_script in migration_scripts:
+        client.execute(migration_script)
       print(f"INSERT INTO schema_versions(version, script, md5) VALUES({row['version']}, '{row['script']}', '{row['md5']}')")
       client.execute(f"INSERT INTO schema_versions(version, script, md5) VALUES", [{'version': row['version'], 'script': row['script'], 'md5':row['md5']}])
 
@@ -62,6 +64,6 @@ def migrate(db_name, migrations_home, db_host, db_user, db_password, db_port=Non
   init_db(client, db_name)
   migrations = [{"version": int(f.name.split('_')[0].replace('V', '')),
                  "script": f"{migrations_home}/{f.name}", "md5": hashlib.md5(pathlib.Path(f"{migrations_home}/{f.name}").read_bytes()).hexdigest()}
-                for f in os.scandir(f"{migrations_home}") if f.name.endswith('.sql')]
+                for f in os.scandir(f"{migrations_home}") if f.name.endswith('.sql') or f.name.endswith('.json')]
   apply_migration(client, migrations_to_apply(client, pd.DataFrame(migrations)))
   client.disconnect()

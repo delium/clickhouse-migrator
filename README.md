@@ -43,3 +43,17 @@ The filenames are pretty similar to how `flyway` keeps it.
 Your first version filename should be prefixed with `V1__` (double underscore)
 These migrations are executed one by one, failures in between will stop and not further version files will be executed.
 
+#### Multi statement and single statement migrations
+
+If your migration is a single statement, you can create a file in the migration folder using the .sql extension and push your migration statement in there.
+
+If you want to execute more than one statement in your migration, you can use a json file using the array syntax. Note that when using a json file, contents should be a valid json array as show. Ensure to keep migrations logical. Its not a good practise to push all migrations to one json file and neither is it wise to in all cases have them each statement in one file.
+
+
+```json
+[
+  "CREATE TABLE pytest.sample1(id UInt32, name String) ENGINE MergeTree PARTITION BY tuple() ORDER BY tuple()",
+  "CREATE TABLE pytest.sample2(id UInt32, name String) ENGINE MergeTree PARTITION BY tuple() ORDER BY tuple()",
+  "CREATE TABLE pytest.sample3(id UInt32, name String) ENGINE MergeTree PARTITION BY tuple() ORDER BY tuple()"
+]
+```
