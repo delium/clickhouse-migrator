@@ -1,5 +1,9 @@
 ## Clickhouse Migrator
 
+[![Build Status](https://app.travis-ci.com/delium/clickhouse-migrator.svg?branch=master)](https://app.travis-ci.com/delium/clickhouse-migrator)
+[![Maintainability](https://api.codeclimate.com/v1/badges/0f3bdcfd7fbf643a0e7b/maintainability)](https://codeclimate.com/github/delium/clickhouse-migrator/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/0f3bdcfd7fbf643a0e7b/test_coverage)](https://codeclimate.com/github/delium/clickhouse-migrator/test_coverage)
+
 [Clickhouse](https://clickhouse.tech/) is known for its scale to store and fetch large datasets.
 
 Development and Maintenance of large-scale db systems many times requires constant changes to the actual DB system.
