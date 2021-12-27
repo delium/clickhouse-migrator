@@ -1,5 +1,5 @@
 import pytest
-from migration_lib.migrate import migrate, get_connection, migrations_to_apply, init_db, execute_and_inflate
+from clickhouse_migrate.migrate import migrate, get_connection, migrations_to_apply, init_db, execute_and_inflate
 import pandas as pd
 import os
 
