@@ -1,11 +1,11 @@
-import hashlib
-import os
-import pathlib
+import logging
+from pathlib import Path
 
 import pandas as pd
 from clickhouse_driver import Client
 
-from clickhouse_migrations.migrate import apply_migration, migrations_to_apply
+from .migrate import apply_migration, migrations_to_apply
+from .types import MigrationStorage
 
 
 class Migrator:
@@ -37,24 +37,18 @@ class Migrator:
     def migrate(
         self,
         db_name: str,
-        migration_path: pathlib.Path,
+        migration_path: Path,
         create_db_if_no_exists: bool = True,
     ):
         if create_db_if_no_exists:
             self.create_db(db_name)
 
+        storage = MigrationStorage(migration_path)
+        logging.info("Total migrations: %d", storage.count())
+
         with self.connection(db_name) as conn:
             self.init_schema(conn)
 
-            migrations = [
-                {
-                    "version": int(f.name.split("_")[0].replace("V", "")),
-                    "script": f"{migration_path}/{f.name}",
-                    "md5": hashlib.md5(
-                        pathlib.Path(f"{migration_path}/{f.name}").read_bytes()
-                    ).hexdigest(),
-                }
-                for f in os.scandir(f"{migration_path}")
-                if f.name.endswith(".sql")
-            ]
-            apply_migration(conn, migrations_to_apply(conn, pd.DataFrame(migrations)))
+            apply_migration(
+                conn, migrations_to_apply(conn, pd.DataFrame(storage.migrations))
+            )
